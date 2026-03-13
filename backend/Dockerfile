@@ -1,4 +1,4 @@
-FROM node:22-alpine AS base
+FROM node:24-alpine AS base
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ FROM base AS production-deps
 
 RUN npm ci --omit=dev && npm cache clean --force
 
-FROM node:22-alpine AS production
+FROM node:24-alpine AS production
 
 ENV NODE_ENV=production
 
