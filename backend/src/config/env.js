@@ -1,0 +1,31 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import dotenv from "dotenv";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({
+  path: path.resolve(__dirname, "../../.env"),
+});
+
+const requiredEnvVars = ["MONGODB_URI"];
+
+for (const key of requiredEnvVars) {
+  if (!process.env[key]) {
+    throw new Error(`Missing required environment variable: ${key}`);
+  }
+}
+
+const env = {
+  nodeEnv: process.env.NODE_ENV || "development",
+  port: Number(process.env.PORT) || 3000,
+  mongodbUri: process.env.MONGODB_URI,
+  dbMaxRetries: Number(process.env.DB_MAX_RETRIES) || 10,
+  dbRetryDelayMs: Number(process.env.DB_RETRY_DELAY_MS) || 5000,
+  dbServerSelectionTimeoutMs:
+    Number(process.env.DB_SERVER_SELECTION_TIMEOUT_MS) || 5000,
+};
+
+export default env;
