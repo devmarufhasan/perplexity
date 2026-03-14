@@ -26,6 +26,10 @@ const env = {
   dbRetryDelayMs: Number(process.env.DB_RETRY_DELAY_MS) || 5000,
   dbServerSelectionTimeoutMs:
     Number(process.env.DB_SERVER_SELECTION_TIMEOUT_MS) || 5000,
+  googleClientId: process.env.GOOGLE_CLIENT_ID,
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  googleRefreshToken: process.env.GOOGLE_REFRESH_TOKEN,
+  googleUser: process.env.GOOGLE_USER,
 };
 
 export default env;
