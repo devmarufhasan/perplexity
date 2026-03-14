@@ -1,5 +1,11 @@
+import AppError from "../utils/app-error.js";
+
 export function notFoundMiddleware(req, _res, next) {
-  const error = new Error(`Route not found: ${req.method} ${req.originalUrl}`);
-  error.statusCode = 404;
-  next(error);
+  next(
+    new AppError(
+      `Route not found: ${req.method} ${req.originalUrl}`,
+      404,
+      "ROUTE_NOT_FOUND",
+    ),
+  );
 }
