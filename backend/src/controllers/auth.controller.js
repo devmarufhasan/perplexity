@@ -132,3 +132,18 @@ export async function verifyEmail(req, res) {
     message: "Email verified successfully",
   });
 }
+
+export async function getMe(req, res) {
+  const user = await UserModel.findById(req.user.id).select("-password");
+
+  if (!user) {
+    throw new AppError("User not found", 404, "USER_NOT_FOUND");
+  }
+
+  res.json({
+    success: true,
+    data: {
+      ...user._doc,
+    },
+  });
+}

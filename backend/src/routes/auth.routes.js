@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import * as authController from "../controllers/auth.controller.js";
+import { authUser } from "../middlewares/auth.middleware.js";
 import { validateRequest } from "../middlewares/validate-request.js";
 import {
   loginValidator,
@@ -16,7 +17,14 @@ authRouter.post(
   authController.register,
 );
 
-authRouter.post("/login", loginValidator, validateRequest, authController.login);
+authRouter.post(
+  "/login",
+  loginValidator,
+  validateRequest,
+  authController.login,
+);
+
+authRouter.get("/get-me", authUser, authController.getMe);
 
 authRouter.get("/verify-email/:token", authController.verifyEmail);
 
