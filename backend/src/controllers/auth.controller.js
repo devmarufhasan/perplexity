@@ -1,6 +1,9 @@
+import jwt from "jsonwebtoken";
+import env from "../config/env.js";
 import UserModel from "../models/user.model.js";
 import { sendEmail } from "../services/mail.service.js";
 import AppError from "../utils/app-error.js";
+import { buildVerificationEmailTemplate } from "../utils/email-templates.js";
 
 export const register = async (req, res) => {
   const { username, email, password } = req.body;
@@ -19,20 +22,58 @@ export const register = async (req, res) => {
     ]);
   }
 
-  await UserModel.create({
+  const newUser = await UserModel.create({
     username,
     email,
     password,
   });
 
+  const emailVerificationToken = jwt.sign(
+    {
+      email: newUser.email,
+      userId: newUser._id,
+    },
+    env.jwtSecret,
+    { expiresIn: "1d" },
+  );
+
+  const verificationUrl = `http://localhost:3000/api/auth/verify-email/${emailVerificationToken}`;
+
   await sendEmail(
     email,
-    "Welcome to Our App!",
-    `<p>Hi ${username},</p><p>Thank you for registering at our app. We're excited to have you on board!</p><p>Best regards,<br/>The Team</p>`,
+    "Welcome to Perplexity!",
+    buildVerificationEmailTemplate({
+      username,
+      verificationUrl,
+    }),
   );
 
   res.status(201).json({
     success: true,
     message: "User registered successfully",
+    data: { emailVerificationToken },
   });
 };
+
+export async function verifyEmail(req, res) {
+  const { token } = req.params;
+  const data = jwt.verify(token, env.jwtSecret);
+
+  const user = await UserModel.findOne({ email: data.email });
+
+  if (!user) {
+    throw new AppError("User not found", 404, "USER_NOT_FOUND");
+  }
+
+  if (user.verified) {
+    throw new AppError("Email already verified", 400, "EMAIL_ALREADY_VERIFIED");
+  }
+
+  user.verified = true;
+  await user.save();
+
+  res.json({
+    success: true,
+    message: "Email verified successfully",
+  });
+}

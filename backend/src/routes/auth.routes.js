@@ -13,4 +13,6 @@ authRouter.post(
   authController.register,
 );
 
+authRouter.get("/verify-email/:token", authController.verifyEmail);
+
 export default authRouter;
