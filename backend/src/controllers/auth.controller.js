@@ -37,7 +37,7 @@ export const register = async (req, res) => {
     { expiresIn: "1d" },
   );
 
-  const verificationUrl = `http://localhost:3000/api/auth/verify-email/${emailVerificationToken}`;
+  const verificationUrl = `http://localhost:3000/api/v1/auth/verify-email/${emailVerificationToken}`;
 
   await sendEmail(
     email,
