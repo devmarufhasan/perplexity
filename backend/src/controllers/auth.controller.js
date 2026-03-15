@@ -55,6 +55,61 @@ export const register = async (req, res) => {
   });
 };
 
+export async function login(req, res) {
+  const { email, password } = req.body;
+
+  const user = await UserModel.findOne({ email });
+
+  if (!user) {
+    throw new AppError("Invalid email or password", 401, "INVALID_CREDENTIALS");
+  }
+  if (!user.verified) {
+    throw new AppError("Email not verified", 401, "EMAIL_NOT_VERIFIED", [
+      {
+        field: "email",
+        message: "Email not verified",
+        value: email,
+      },
+    ]);
+  }
+
+  const isPasswordValid = await user.comparePassword(password);
+
+  if (!isPasswordValid) {
+    throw new AppError("Invalid email or password", 401, "INVALID_CREDENTIALS");
+  }
+
+  const token = jwt.sign(
+    {
+      userId: user._id,
+      email: user.email,
+    },
+    env.jwtSecret,
+    { expiresIn: "1d" },
+  );
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: env.nodeEnv === "production",
+    sameSite: "strict",
+    maxAge: 24 * 60 * 60 * 1000,
+  });
+
+  res.json({
+    success: true,
+    message: "Login successful",
+    data: {
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        verified: user.verified,
+      },
+    },
+  });
+}
+
 export async function verifyEmail(req, res) {
   const { token } = req.params;
   const data = jwt.verify(token, env.jwtSecret);
