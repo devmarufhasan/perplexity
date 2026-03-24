@@ -33,6 +33,7 @@ const env = {
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
   googleRefreshToken: process.env.GOOGLE_REFRESH_TOKEN,
   googleUser: process.env.GOOGLE_USER,
+  geminiApiKey: process.env.GEMINI_API_KEY,
 };
 
 export default env;
