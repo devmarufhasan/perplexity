@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 const initialFormData = {
   username: "",
@@ -9,6 +10,7 @@ const initialFormData = {
 
 const Register = () => {
   const [formData, setFormData] = useState(initialFormData);
+  const { handleRegister } = useAuth();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -19,9 +21,9 @@ const Register = () => {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("Register form submitted:", formData);
+    await handleRegister(formData.username, formData.email, formData.password);
   };
 
   return (
@@ -112,7 +114,7 @@ const Register = () => {
                 Already have an account?{" "}
                 <Link
                   className="font-medium text-red-300 transition hover:text-red-200"
-                  to="/"
+                  to="/login"
                 >
                   Return to login
                 </Link>

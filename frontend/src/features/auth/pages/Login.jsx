@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 const initialFormData = {
   email: "",
@@ -8,6 +9,7 @@ const initialFormData = {
 
 const Login = () => {
   const [formData, setFormData] = useState(initialFormData);
+  const { handleLogin } = useAuth();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -18,9 +20,9 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("Login form submitted:", formData);
+    await handleLogin(formData.email, formData.password);
   };
 
   return (

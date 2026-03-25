@@ -3,9 +3,6 @@ import http from "node:http";
 import app from "./src/app.js";
 import { connectDatabase } from "./src/config/db.js";
 import env from "./src/config/env.js";
-import { testAi } from "./src/services/ai.service.js";
-
-testAi();
 
 async function startServer() {
   try {
