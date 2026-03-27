@@ -3,12 +3,14 @@ import http from "node:http";
 import app from "./src/app.js";
 import { connectDatabase } from "./src/config/db.js";
 import env from "./src/config/env.js";
+import { initializeSocket } from "./src/sockets/server.socket.js";
 
 async function startServer() {
   try {
     const dbConnection = await connectDatabase();
 
     const server = http.createServer(app);
+    initializeSocket(server);
 
     server.listen(env.port, () => {
       console.log(`Database connected: ${dbConnection.name}`);
