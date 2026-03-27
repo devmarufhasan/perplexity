@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 const initialFormData = {
@@ -11,6 +12,11 @@ const initialFormData = {
 const Register = () => {
   const [formData, setFormData] = useState(initialFormData);
   const { handleRegister } = useAuth();
+  const { user, loading } = useSelector((state) => state.auth);
+
+  if (!loading && user) {
+    return <Navigate replace to="/" />;
+  }
 
   const handleChange = (event) => {
     const { name, value } = event.target;

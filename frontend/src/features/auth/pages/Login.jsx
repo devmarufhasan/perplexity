@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 const initialFormData = {
@@ -10,6 +11,12 @@ const initialFormData = {
 const Login = () => {
   const [formData, setFormData] = useState(initialFormData);
   const { handleLogin } = useAuth();
+  const navigate = useNavigate();
+  const { user, loading } = useSelector((state) => state.auth);
+
+  if (!loading && user) {
+    return <Navigate replace to="/" />;
+  }
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -22,7 +29,14 @@ const Login = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    await handleLogin(formData.email, formData.password);
+    try {
+      const user = await handleLogin(formData.email, formData.password);
+      if (user) {
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   };
 
   return (
