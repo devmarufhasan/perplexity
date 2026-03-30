@@ -6,6 +6,7 @@ import morgan from "morgan";
 import { globalErrorMiddleware } from "./middlewares/error-handler.js";
 import { notFoundMiddleware } from "./middlewares/not-found.js";
 import authRouter from "./routes/auth.routes.js";
+import chatRouter from "./routes/chat.routes.js";
 import apiV1Router from "./routes/index.js";
 
 const app = express();
@@ -34,6 +35,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/v1", apiV1Router);
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/chats", chatRouter);
 
 app.use(notFoundMiddleware);
 app.use(globalErrorMiddleware);
