@@ -1,6 +1,6 @@
+import env from "../config/env.js";
 import ChatModel from "../models/chat.model.js";
 import MessageModel from "../models/message.model.js";
-import env from "../config/env.js";
 import { generateChatTitle, generateResponse } from "../services/ai.service.js";
 import {
   getCachedChatHistory,
@@ -109,5 +109,61 @@ export async function sendMessage(req, res) {
     aiMessage,
     userMessage,
     conversationHistory: updatedConversationHistory,
+  });
+}
+
+export async function getChats(req, res) {
+  const chats = await ChatModel.find({ user: req.user.id });
+
+  res.status(200).json({
+    success: true,
+    chats,
+  });
+}
+
+export async function getMessages(req, res) {
+  const { chatId } = req.params;
+
+  let messages = await getCachedChatHistory(chatId);
+
+  if (!messages) {
+    messages = await MessageModel.find({ chat: chatId })
+      .sort({ createdAt: 1 })
+      .lean();
+
+    messages = messages.map(serializeMessage);
+    await setCachedChatHistory(chatId, messages);
+  }
+
+  res.status(200).json({
+    success: true,
+    messages,
+  });
+}
+
+export async function deleteChat(req, res) {
+  const { chatId } = req.params;
+  const chat = await ChatModel.findOneAndDelete({
+    _id: chatId,
+    user: req.user.id,
+  });
+
+  if (!chat) {
+    throw new AppError("Chat not found", 404, "CHAT_NOT_FOUND", [
+      {
+        field: "chat",
+        message:
+          "Chat with the provided ID does not exist or you do not have permission to delete it",
+        value: chatId,
+      },
+    ]);
+  }
+
+  await MessageModel.deleteMany({ chat: chatId });
+  await setCachedChatHistory(chatId, null);
+
+  res.status(200).json({
+    success: true,
+    message: "Chat deleted successfully",
   });
 }
