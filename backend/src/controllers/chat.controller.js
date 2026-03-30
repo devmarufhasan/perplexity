@@ -1,6 +1,11 @@
 import ChatModel from "../models/chat.model.js";
 import MessageModel from "../models/message.model.js";
+import env from "../config/env.js";
 import { generateChatTitle, generateResponse } from "../services/ai.service.js";
+import {
+  getCachedChatHistory,
+  setCachedChatHistory,
+} from "../services/chat-cache.service.js";
 import AppError from "../utils/app-error.js";
 
 function serializeMessage(message) {
@@ -33,11 +38,19 @@ export async function sendMessage(req, res) {
         ]);
       }
 
-      const messages = await MessageModel.find({ chat: chatId }).sort({
-        createdAt: 1,
-      });
+      conversationHistory = await getCachedChatHistory(chatId);
 
-      conversationHistory = messages.map(serializeMessage);
+      if (!conversationHistory) {
+        const messages = await MessageModel.find({ chat: chatId })
+          .sort({
+            createdAt: -1,
+          })
+          .limit(env.chatHistoryLimit)
+          .lean();
+
+        conversationHistory = messages.reverse().map(serializeMessage);
+        await setCachedChatHistory(chatId, conversationHistory);
+      }
 
       chat = chatDetails;
       title = chatDetails.title;
@@ -85,7 +98,9 @@ export async function sendMessage(req, res) {
     ...conversationHistory,
     serializeMessage(userMessage),
     serializeMessage(aiMessage),
-  ];
+  ].slice(-env.chatHistoryLimit);
+
+  await setCachedChatHistory(chat._id.toString(), updatedConversationHistory);
 
   res.status(200).json({
     success: true,

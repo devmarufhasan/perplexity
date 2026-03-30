@@ -36,6 +36,11 @@ const env = {
   geminiApiKey: process.env.GEMINI_API_KEY,
 
   mistralApiKey: process.env.MISTRAL_API_KEY,
+
+  valkeyUrl: process.env.VALKEY_URL || "redis://127.0.0.1:6379",
+  valkeyEnabled: process.env.VALKEY_ENABLED !== "false",
+  valkeyTtlSeconds: Number(process.env.VALKEY_TTL_SECONDS) || 3600,
+  chatHistoryLimit: Number(process.env.CHAT_HISTORY_LIMIT) || 20,
 };
 
 export default env;

@@ -1,6 +1,37 @@
 name: perplexity-dev
 
 services:
+  valkey:
+    image: valkey/valkey:9.0.3-alpine
+    container_name: perplexity_dev_valkey
+    restart: unless-stopped
+    ports:
+      - "${VALKEY_PORT:-6379}:6379"
+    volumes:
+      - valkey_dev_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app_network
+
+  redis-insight:
+    image: redis/redisinsight:2.70
+    container_name: perplexity_dev_redis_insight
+    restart: unless-stopped
+    depends_on:
+      valkey:
+        condition: service_healthy
+    ports:
+      - "${REDIS_INSIGHT_PORT:-5540}:5540"
+    volumes:
+      - redis_insight_data:/data
+    networks:
+      - app_network
+
   mongodb:
     image: mongo:7.0
     container_name: perplexity_dev_mongodb
@@ -41,7 +72,13 @@ services:
       DB_RETRY_DELAY_MS: ${DB_RETRY_DELAY_MS:-5000}
       DB_SERVER_SELECTION_TIMEOUT_MS: ${DB_SERVER_SELECTION_TIMEOUT_MS:-5000}
       MONGODB_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME:-admin}:${MONGO_INITDB_ROOT_PASSWORD:-password}@mongodb:27017/${MONGO_DATABASE:-perplexity}?authSource=admin
+      VALKEY_URL: redis://valkey:6379
+      VALKEY_ENABLED: ${VALKEY_ENABLED:-true}
+      VALKEY_TTL_SECONDS: ${VALKEY_TTL_SECONDS:-3600}
+      CHAT_HISTORY_LIMIT: ${CHAT_HISTORY_LIMIT:-20}
     depends_on:
+      valkey:
+        condition: service_healthy
       mongodb:
         condition: service_healthy
     ports:
@@ -79,6 +116,8 @@ networks:
     driver: bridge
 
 volumes:
+  valkey_dev_data:
+  redis_insight_data:
   mongo_dev_data:
   mongo_dev_config:
   backend_node_modules:

@@ -3,11 +3,13 @@ import http from "node:http";
 import app from "./src/app.js";
 import { connectDatabase } from "./src/config/db.js";
 import env from "./src/config/env.js";
+import { connectValkey, disconnectValkey } from "./src/config/valkey.js";
 import { initializeSocket } from "./src/sockets/server.socket.js";
 
 async function startServer() {
   try {
     const dbConnection = await connectDatabase();
+    await connectValkey();
 
     const server = http.createServer(app);
     initializeSocket(server);
@@ -21,6 +23,7 @@ async function startServer() {
       console.log(`${signal} received. Shutting down gracefully...`);
 
       server.close(async () => {
+        await disconnectValkey();
         await dbConnection.close();
         process.exit(0);
       });
